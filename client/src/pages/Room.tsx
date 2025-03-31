@@ -54,6 +54,7 @@ const Room = () => {
   const [members, setMembers] = useState<string[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFitToScreen, setIsFitToScreen] = useState(false);
 
   // Get username from localStorage or generate a new one
   useEffect(() => {
@@ -517,8 +518,6 @@ const Room = () => {
       </div>
     );
   }
-
-  const [isFitToScreen, setIsFitToScreen] = useState(false);
   
   return (
     <div id="app" className="flex flex-col h-screen">
