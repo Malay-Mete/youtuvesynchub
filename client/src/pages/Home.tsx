@@ -24,11 +24,17 @@ const Home = () => {
     setIsCreating(true);
     try {
       const newRoomCode = await createRoom();
+      
       toast({
         title: "Room Created",
         description: `Your room code is: ${newRoomCode}`,
       });
-      setLocation(`/room/${newRoomCode}`);
+      
+      // Small delay to ensure UI updates
+      setTimeout(() => {
+        setLocation(`/room/${newRoomCode}`);
+      }, 100);
+      
     } catch (error) {
       console.error("Error creating room:", error);
       toast({
@@ -55,10 +61,15 @@ const Home = () => {
     
     setIsJoining(true);
     try {
-      const exists = await checkRoomExists(roomCode);
+      // Force uppercase for consistency
+      const roomCodeUpper = roomCode.toUpperCase();
+      const exists = await checkRoomExists(roomCodeUpper);
       
       if (exists) {
-        setLocation(`/room/${roomCode.toUpperCase()}`);
+        // Small delay to ensure UI updates
+        setTimeout(() => {
+          setLocation(`/room/${roomCodeUpper}`);
+        }, 100);
       } else {
         toast({
           title: "Room Not Found",

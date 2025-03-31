@@ -6,57 +6,63 @@ import { useEffect, useState } from "react";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Room from "@/pages/Room";
-import { createClient } from '@supabase/supabase-js';
 import { useToast } from "@/hooks/use-toast";
 
 function App() {
   const { toast } = useToast();
-  const [supabaseLoaded, setSupabaseLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Initialize Supabase client
+  // Initialize app and check prerequisites
   useEffect(() => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-    
-    if (!supabaseUrl || !supabaseKey) {
-      toast({
-        title: "Configuration Error",
-        description: "Supabase configuration is missing. Please check your environment variables.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    try {
-      const client = createClient(supabaseUrl, supabaseKey);
-      window.supabase = client;
-      setSupabaseLoaded(true);
-    } catch (error) {
-      console.error("Failed to initialize Supabase client:", error);
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect to Supabase. Please try again later.",
-        variant: "destructive",
-      });
-    }
+    const checkSupabase = async () => {
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey) {
+          console.warn("Supabase configuration missing. Using fallback implementation.");
+          // We'll continue with local storage fallback
+        } else if (!window.supabase) {
+          console.warn("Supabase client not initialized in main.tsx. Using fallback.");
+          // We'll continue with local storage fallback
+        }
+        
+        // Ready to render the application
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error during app initialization:", error);
+        // Continue with fallback implementation
+        setIsLoading(false);
+      }
+    };
+
+    // Short timeout to ensure UI is responsive
+    const timer = setTimeout(() => {
+      checkSupabase();
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [toast]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold">Loading YouTube Sync...</h2>
+          <p className="text-muted-foreground mt-2">Setting up your viewing experience</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      {supabaseLoaded ? (
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/room/:roomCode" component={Room} />
-          <Route component={NotFound} />
-        </Switch>
-      ) : (
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold">Loading YouTube Sync...</h2>
-          </div>
-        </div>
-      )}
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/room/:roomCode" component={Room} />
+        <Route component={NotFound} />
+      </Switch>
       <Toaster />
     </QueryClientProvider>
   );
