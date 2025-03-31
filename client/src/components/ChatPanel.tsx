@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 interface ChatPanelProps {
   messages: Array<{
     id: string;
-    type: 'chat' | 'command' | 'system';
+    type: 'chat' | 'command' | 'system' | 'user_joined' | 'user_left' | 'video_changed' | 'video_state_changed';
     username: string;
     content: string;
     timestamp: number;
@@ -42,7 +42,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   };
 
   // Create a unique list of members with you marker
-  const uniqueMembers = [...new Set(members)];
+  const uniqueMembers: string[] = [];
+  members.forEach(m => {
+    if (!uniqueMembers.includes(m)) {
+      uniqueMembers.push(m);
+    }
+  });
   
   return (
     <div className="w-full md:w-1/4 flex flex-col bg-secondary border-l border-muted h-full">

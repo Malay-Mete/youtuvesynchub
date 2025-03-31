@@ -6,7 +6,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import ChatPanel from '@/components/ChatPanel';
 import VideoControls from '@/components/VideoControls';
 import type { YouTubePlayer, YoutubeQualityLevel } from '@/lib/youtube';
-import { parseCommand, extractVideoId } from '@/lib/youtube';
+import { parseCommand, extractVideoId, qualityMap } from '@/lib/youtube';
 
 type RoomParams = {
   roomCode: string;
@@ -46,7 +46,7 @@ const Room = () => {
   const [videoState, setVideoState] = useState<VideoState>(initialVideoState);
   const [messages, setMessages] = useState<Array<{
     id: string;
-    type: 'chat' | 'command' | 'system';
+    type: 'chat' | 'command' | 'system' | 'user_joined' | 'user_left' | 'video_changed' | 'video_state_changed';
     username: string;
     content: string;
     timestamp: number;
@@ -184,7 +184,7 @@ const Room = () => {
               setVideoState(prev => ({
                 ...prev,
                 videoId,
-                videoUrl: payload.videoUrl,
+                videoUrl: payload.videoUrl || null,
               }));
             }
           }
@@ -434,7 +434,7 @@ const Room = () => {
       setVideoState(prev => ({
         ...prev,
         videoId,
-        videoUrl: url,
+        videoUrl: url || null,
       }));
     } else {
       toast({
@@ -448,30 +448,54 @@ const Room = () => {
   const handleQualityChange = (quality: string) => {
     if (!player) return;
     
-    player.setPlaybackQuality(quality as YoutubeQualityLevel);
+    console.log('Room: Setting video quality to:', quality);
     
-    // Broadcast quality change
-    broadcastToRoom(roomCode, {
-      type: 'video_state_changed',
-      roomCode,
-      username,
-      videoState: {
-        action: 'quality',
-        value: quality,
-      },
-    });
-    
-    setVideoState(prev => ({
-      ...prev,
-      quality: quality as YoutubeQualityLevel,
-    }));
-    
-    // Add system message
-    broadcastToRoom(roomCode, {
-      type: 'system',
-      roomCode,
-      message: `Video quality changed to ${quality}`,
-    });
+    try {
+      // Try to set the quality
+      player.setPlaybackQuality(quality as YoutubeQualityLevel);
+      
+      // Get the actual quality label to display
+      const readableQuality = qualityMap[quality as YoutubeQualityLevel] || quality;
+      
+      // Update the local state
+      setVideoState(prev => ({
+        ...prev,
+        quality: quality as YoutubeQualityLevel,
+      }));
+      
+      // Broadcast quality change to others
+      broadcastToRoom(roomCode, {
+        type: 'video_state_changed',
+        roomCode,
+        username,
+        videoState: {
+          action: 'quality',
+          value: quality,
+        },
+      });
+      
+      // Add system message
+      broadcastToRoom(roomCode, {
+        type: 'system',
+        roomCode,
+        message: `Video quality changed to ${readableQuality}`,
+      });
+      
+      // Show toast confirmation
+      toast({
+        title: "Quality Changed",
+        description: `Video quality set to ${readableQuality}`,
+      });
+      
+      console.log('Quality successfully changed to:', quality);
+    } catch (error) {
+      console.error('Error changing video quality:', error);
+      toast({
+        title: "Quality Change Failed",
+        description: "Couldn't change video quality. Try again later.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {

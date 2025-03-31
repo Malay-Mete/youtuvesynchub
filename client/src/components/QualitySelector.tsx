@@ -1,6 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { type YouTubePlayer, YoutubeQualityLevel, qualityMap, reverseQualityMap } from '@/lib/youtube';
+import { 
+  type YouTubePlayer, 
+  YoutubeQualityLevel, 
+  qualityMap, 
+  reverseQualityMap 
+} from '@/lib/youtube';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface QualitySelectorProps {
   player: YouTubePlayer | null;
@@ -15,90 +26,82 @@ const QualitySelector: React.FC<QualitySelectorProps> = ({
   currentQuality,
   disabled
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const [availableQualities, setAvailableQualities] = useState<string[]>([]);
-  const menuRef = useRef<HTMLDivElement>(null);
   
   // Get quality readable name
   const qualityName = qualityMap[currentQuality] || 'Auto';
-  
-  // Handle click outside to close menu
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
   
   // Get available qualities from player
   useEffect(() => {
     if (player) {
       try {
         const qualities = player.getAvailableQualityLevels();
-        const readableQualities = qualities.map(q => qualityMap[q as YoutubeQualityLevel] || q);
+        console.log('Available YouTube quality levels:', qualities);
         
-        // Always include common qualities even if not reported by YouTube
+        // Convert to readable formats
+        const readableQualities = qualities.map(q => qualityMap[q as YoutubeQualityLevel] || q);
+        console.log('Readable qualities:', readableQualities);
+        
+        // Always include common qualities for better UI consistency
         const allQualities = ['Auto', '1080p', '720p', '480p', '360p', '240p', '144p'];
         
-        // Merge and deduplicate
-        const mergedQualities = [...new Set([...readableQualities, ...allQualities])];
+        // Create a new array with no duplicates
+        const uniqueQualities: string[] = [];
+        [...readableQualities, ...allQualities].forEach(q => {
+          if (!uniqueQualities.includes(q)) {
+            uniqueQualities.push(q);
+          }
+        });
         
-        setAvailableQualities(mergedQualities);
+        setAvailableQualities(uniqueQualities);
       } catch (error) {
         console.error('Error getting available qualities:', error);
         setAvailableQualities(['Auto', '1080p', '720p', '480p', '360p', '240p', '144p']);
       }
+    } else {
+      // Default qualities when player is not available
+      setAvailableQualities(['Auto', '1080p', '720p', '480p', '360p', '240p', '144p']);
     }
-  }, [player, currentQuality]);
+  }, [player]);
   
   const handleQualitySelect = (quality: string) => {
+    console.log('Quality selected:', quality);
+    // Make sure we're sending the correct YouTube quality level value
     if (reverseQualityMap[quality]) {
+      console.log('Setting quality to:', reverseQualityMap[quality]);
       onQualityChange(reverseQualityMap[quality]);
     } else {
+      // If it's not in our map, use as is (though this shouldn't happen)
+      console.log('Using raw quality value:', quality);
       onQualityChange(quality);
     }
-    setIsOpen(false);
   };
   
   return (
-    <div className="relative" ref={menuRef}>
-      <Button
-        variant="outline"
-        className="flex items-center space-x-1 bg-muted hover:bg-muted-foreground/10 text-sm text-muted-foreground px-3 py-2 rounded-md"
-        onClick={() => setIsOpen(!isOpen)}
-        disabled={disabled}
-      >
-        <i className="fas fa-cog"></i>
-        <span>{qualityName}</span>
-        <i className="fas fa-chevron-down text-xs"></i>
-      </Button>
-      
-      {isOpen && (
-        <div className="absolute right-0 mt-1 w-36 bg-muted rounded-md shadow-lg z-10">
-          <div className="py-1">
-            {availableQualities.map((quality) => (
-              <button
-                key={quality}
-                onClick={() => handleQualitySelect(quality)}
-                className={`block w-full text-left px-4 py-2 text-sm ${
-                  qualityName === quality 
-                    ? 'text-accent bg-secondary' 
-                    : 'text-muted-foreground hover:bg-secondary hover:text-accent'
-                } transition`}
-              >
-                {quality}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild disabled={disabled}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 bg-muted/30 hover:bg-muted/50 text-sm font-medium h-9 px-3"
+        >
+          <i className="fas fa-cog text-xs mr-1" aria-hidden="true"></i>
+          <span>{qualityName}</span>
+          <i className="fas fa-chevron-down text-xs ml-1" aria-hidden="true"></i>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40">
+        {availableQualities.map((quality) => (
+          <DropdownMenuItem
+            key={quality}
+            className={`${qualityName === quality ? 'bg-secondary/50 font-medium' : ''}`}
+            onClick={() => handleQualitySelect(quality)}
+          >
+            {quality}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
