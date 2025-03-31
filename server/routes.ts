@@ -1,13 +1,19 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket as WSWebSocket } from "ws";
 import { storage } from "./storage";
+
+// WebSocket constants
+const OPEN = 1;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // Set up WebSocket server for realtime communication
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Make it globally accessible
+  global.wss = wss;
   
   // Handle WebSocket connections
   wss.on('connection', (ws) => {
@@ -94,6 +100,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // API status endpoint
+  app.get('/api/status', (req, res) => {
+    try {
+      const wsClientCount = Array.from(wss.clients).length;
+      res.status(200).json({
+        status: 'ok',
+        websocket: {
+          status: 'running',
+          clients: wsClientCount
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error checking status:', error);
+      res.status(500).json({ 
+        status: 'error',
+        message: 'Server status check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  
   return httpServer;
 }
 
@@ -130,7 +158,7 @@ function broadcastToRoom(roomCode: string, message: any) {
   const wss = getWebSocketServer();
   
   wss.clients.forEach((client: any) => {
-    if (client.roomCode === roomCode && client.readyState === WebSocket.OPEN) {
+    if (client.roomCode === roomCode && client.readyState === OPEN) {
       client.send(JSON.stringify(message));
     }
   });
@@ -151,11 +179,7 @@ function generateRoomCode() {
   return result;
 }
 
-// Make WebSocket accessible globally
+// Make WebSocket server accessible globally
 declare global {
-  var WebSocket: any;
   var wss: WebSocketServer;
 }
-
-import { WebSocket } from 'ws';
-global.WebSocket = WebSocket;

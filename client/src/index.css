@@ -227,14 +227,27 @@
 /* Input field styling */
 .message-input {
   @apply bg-muted/50 border-muted/70 focus:border-accent rounded-full px-4 py-2 focus:ring-2 focus:ring-accent/30 transition-all duration-200;
+  font-size: 0.9rem;
 }
 
 .send-button {
-  @apply bg-accent hover:bg-accent/80 text-white rounded-full p-2 transition-all duration-200;
+  @apply bg-accent hover:bg-accent/80 text-white rounded-full p-2 transition-all duration-200 flex items-center justify-center shadow-lg;
 }
 
 .send-button:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(229, 57, 53, 0.5);
+}
+
+.send-button:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .message-input {
+    @apply py-1.5 px-3;
+    font-size: 0.85rem;
+  }
 }
 
 /* Room code display */
@@ -300,6 +313,8 @@
   grid-template-columns: 3fr 1fr;
   gap: 1rem;
   height: calc(100vh - 6rem);
+  max-width: 1800px;
+  margin: 0 auto;
 }
 
 @media (max-width: 1024px) {
@@ -312,7 +327,7 @@
 @media (max-width: 768px) {
   .video-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto;
     height: auto;
     gap: 0.75rem;
     padding-bottom: 0.75rem;
@@ -326,13 +341,19 @@
   
   .chat-container {
     grid-row: 2;
-    height: calc(100vh - 85vw - 6rem);
-    min-height: 300px;
+    height: 400px; /* Fixed height for better mobile display */
+    min-height: 320px; 
     max-height: 500px;
+    margin-top: 0.5rem;
   }
   
   .chat-container-inner {
     border-radius: 0.75rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
   
   .app-header {
@@ -342,7 +363,7 @@
   /* Mobile landscape mode */
   @media (orientation: landscape) {
     .video-grid {
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 3fr 2fr;
       grid-template-rows: auto;
       height: calc(100vh - 6rem);
     }
