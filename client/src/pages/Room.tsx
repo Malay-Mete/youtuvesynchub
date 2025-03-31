@@ -509,36 +509,45 @@ const Room = () => {
     );
   }
 
+  const [isFitToScreen, setIsFitToScreen] = useState(false);
+  
   return (
     <div id="app" className="flex flex-col h-screen">
       {/* Header */}
       <header className="app-header py-3 px-4 border-b border-muted/30">
-        <div className="container mx-auto flex items-center justify-between">
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center space-x-3">
             <i className="fas fa-play-circle text-primary text-2xl"></i>
             <h1 className="text-xl app-title">YouTube Sync</h1>
           </div>
           
           <div className="flex items-center">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <span className="text-muted-foreground text-sm">Room:</span>
-                <span 
-                  className="room-code text-sm cursor-pointer"
-                  onClick={() => {
-                    navigator.clipboard.writeText(roomCode);
-                    toast({
-                      title: "Room Code Copied",
-                      description: "Share this code with your friends to join",
-                    });
-                  }}
-                >{roomCode}</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center">
+                <div className="flex items-center space-x-2">
+                  <span 
+                    className="room-code cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(roomCode);
+                      toast({
+                        title: "Room Code Copied",
+                        description: "Share this code with your friends to join",
+                      });
+                    }}
+                  >
+                    <span className="text-xs text-muted-foreground mr-1.5">ROOM</span>
+                    {roomCode}
+                    <span className="copy-btn ml-2">
+                      <i className="fas fa-copy text-xs"></i>
+                    </span>
+                  </span>
+                </div>
               </div>
               <button 
                 onClick={handleLeaveRoom}
-                className="text-sm text-muted-foreground hover:text-primary transition-all btn-hover-effect px-3 py-1 rounded-md hover:bg-muted/30"
+                className="text-sm text-muted-foreground hover:text-primary transition-all btn-hover-effect px-3 py-1.5 rounded-md hover:bg-muted/30"
               >
-                <i className="fas fa-sign-out-alt mr-1"></i> Leave
+                <i className="fas fa-sign-out-alt mr-1.5"></i> Leave Room
               </button>
             </div>
           </div>
@@ -546,15 +555,25 @@ const Room = () => {
       </header>
 
       {/* Main Container */}
-      <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-        {/* Left Side - Video Display and Controls */}
-        <div className="flex flex-col w-full md:w-3/4 h-full p-4">
-          {/* Video Container */}
+      <div className="video-grid container mx-auto px-4 py-2">
+        {/* Video Side */}
+        <div className="video-container relative">
+          {/* Video Player */}
           <VideoPlayer 
             onPlayerReady={setPlayer} 
             isFullscreen={isFullscreen} 
             setIsFullscreen={setIsFullscreen}
+            isFitToScreen={isFitToScreen}
           />
+          
+          {/* Fit to Screen Toggle (mobile only) */}
+          <button
+            className="fit-screen-toggle items-center space-x-1"
+            onClick={() => setIsFitToScreen(!isFitToScreen)}
+          >
+            <i className={`fas fa-${isFitToScreen ? 'compress-alt' : 'expand-alt'} mr-1.5`}></i>
+            <span>{isFitToScreen ? 'Normal' : 'Fit Screen'}</span>
+          </button>
           
           {/* Video Controls */}
           <VideoControls 
@@ -571,7 +590,7 @@ const Room = () => {
           
           {/* Current Video Info */}
           {videoState.title && (
-            <div className="p-4 mt-2 glass-panel rounded-lg hidden md:block animate-[fadeIn_0.3s_ease-out]">
+            <div className="p-4 mt-2 glass-panel rounded-lg mb-4 md:mb-0 animate-[fadeIn_0.3s_ease-out]">
               <h2 className="font-semibold truncate text-lg">{videoState.title}</h2>
               {videoState.channelName && (
                 <p className="text-sm text-muted-foreground mt-1">{videoState.channelName}</p>
@@ -580,13 +599,15 @@ const Room = () => {
           )}
         </div>
         
-        {/* Right Side - Chat and Controls */}
-        <ChatPanel 
-          messages={messages} 
-          onSendMessage={handleSendMessage} 
-          members={members} 
-          username={username}
-        />
+        {/* Chat Side */}
+        <div className="chat-container">
+          <ChatPanel 
+            messages={messages} 
+            onSendMessage={handleSendMessage} 
+            members={members} 
+            username={username}
+          />
+        </div>
       </div>
     </div>
   );
