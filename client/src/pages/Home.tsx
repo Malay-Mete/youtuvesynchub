@@ -10,32 +10,37 @@ import { createRoom, checkRoomExists, generateUsername } from '@/lib/supabase';
 const Home = () => {
   const [, setLocation] = useLocation();
   const [roomCode, setRoomCode] = useState('');
+  const [username, setUsername] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const { toast } = useToast();
 
-  // Generate a random username when component mounts
+  // Get or generate a username when component mounts
   React.useEffect(() => {
-    const username = localStorage.getItem('yt-sync-username') || generateUsername();
-    localStorage.setItem('yt-sync-username', username);
+    const storedUsername = localStorage.getItem('yt-sync-username') || generateUsername();
+    setUsername(storedUsername);
+    localStorage.setItem('yt-sync-username', storedUsername);
   }, []);
 
   const handleCreateRoom = async () => {
     setIsCreating(true);
     try {
+      // Save the current username to localStorage
+      if (username.trim()) {
+        localStorage.setItem('yt-sync-username', username);
+      } else {
+        // Generate a random username if empty
+        const newUsername = generateUsername();
+        setUsername(newUsername);
+        localStorage.setItem('yt-sync-username', newUsername);
+      }
+      
       const newRoomCode = await createRoom();
       
       toast({
         title: "Room Created",
         description: `Your room code is: ${newRoomCode}`,
       });
-      
-      // Make sure username is set in localStorage before redirecting
-      const username = localStorage.getItem('yt-sync-username');
-      if (!username) {
-        const newUsername = generateUsername();
-        localStorage.setItem('yt-sync-username', newUsername);
-      }
       
       // Navigate to the room
       setLocation(`/room/${newRoomCode}`);
@@ -65,18 +70,21 @@ const Home = () => {
     
     setIsJoining(true);
     try {
+      // Save the current username to localStorage
+      if (username.trim()) {
+        localStorage.setItem('yt-sync-username', username);
+      } else {
+        // Generate a random username if empty
+        const newUsername = generateUsername();
+        setUsername(newUsername);
+        localStorage.setItem('yt-sync-username', newUsername);
+      }
+      
       // Force uppercase for consistency
       const roomCodeUpper = roomCode.toUpperCase();
       const exists = await checkRoomExists(roomCodeUpper);
       
       if (exists) {
-        // Make sure username is set in localStorage before redirecting
-        const username = localStorage.getItem('yt-sync-username');
-        if (!username) {
-          const newUsername = generateUsername();
-          localStorage.setItem('yt-sync-username', newUsername);
-        }
-        
         // Navigate to the room
         setLocation(`/room/${roomCodeUpper}`);
       } else {
@@ -108,7 +116,17 @@ const Home = () => {
           <h2 className="text-2xl font-semibold mb-6">Watch YouTube videos together, in perfect sync</h2>
           
           <div className="space-y-6">
-            <div>
+            <div className="space-y-4">
+              <div>
+                <Input 
+                  type="text" 
+                  placeholder="Your Name (or leave blank for random)" 
+                  className="w-full bg-muted border border-muted focus:border-accent"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  maxLength={30}
+                />
+              </div>
               <Button 
                 variant="default" 
                 className="w-full bg-primary hover:bg-red-700 text-white font-medium py-3 px-4 rounded-md transition"
@@ -140,10 +158,20 @@ const Home = () => {
                 <Input 
                   type="text" 
                   placeholder="Enter Room Code" 
-                  className="w-full bg-muted border border-muted focus:border-accent"
+                  className="w-full bg-muted border border-muted focus:border-accent mb-3"
                   value={roomCode}
                   onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                   maxLength={6}
+                />
+              </div>
+              <div>
+                <Input 
+                  type="text" 
+                  placeholder="Your Name (or leave blank for random)" 
+                  className="w-full bg-muted border border-muted focus:border-accent"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  maxLength={30}
                 />
               </div>
               <Button 

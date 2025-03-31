@@ -6,7 +6,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import ChatPanel from '@/components/ChatPanel';
 import VideoControls from '@/components/VideoControls';
 import type { YouTubePlayer, YoutubeQualityLevel } from '@/lib/youtube';
-import { parseCommand, extractVideoId, qualityMap } from '@/lib/youtube';
+import { parseCommand, extractVideoId, qualityMap, YT_PLAYER_STATE } from '@/lib/youtube';
 
 type RoomParams = {
   roomCode: string;
@@ -123,6 +123,23 @@ const Room = () => {
       username,
     });
     
+    // Set up player state change monitoring
+    const videoStateInterval = setInterval(() => {
+      if (player) {
+        // Get current player state
+        const currentState = player.getPlayerState();
+        const currentTime = player.getCurrentTime();
+        
+        // Update local video state 
+        // YT_PLAYER_STATE.PLAYING = 1
+        setVideoState(prev => ({
+          ...prev,
+          isPlaying: currentState === 1, // 1 is PLAYING state
+          currentTime: currentTime,
+        }));
+      }
+    }, 5000); // Check every 5 seconds
+    
     // Subscribe to room messages
     const unsubscribe = subscribeToRoom(roomCode, (payload) => {
       switch(payload.type) {
@@ -232,6 +249,50 @@ const Room = () => {
       }
     });
     
+    // Add player event listeners for state monitoring
+    if (player) {
+      // Setup event listeners on player for synchronization
+      const originalPlay = player.playVideo;
+      player.playVideo = function() {
+        originalPlay.apply(this);
+        broadcastToRoom(roomCode, {
+          type: 'video_state_changed',
+          roomCode,
+          username,
+          videoState: {
+            action: 'play',
+          },
+        });
+      };
+      
+      const originalPause = player.pauseVideo;
+      player.pauseVideo = function() {
+        originalPause.apply(this);
+        broadcastToRoom(roomCode, {
+          type: 'video_state_changed',
+          roomCode,
+          username,
+          videoState: {
+            action: 'pause',
+          },
+        });
+      };
+      
+      const originalSeek = player.seekTo;
+      player.seekTo = function(seconds, allowSeekAhead) {
+        originalSeek.apply(this, [seconds, allowSeekAhead]);
+        broadcastToRoom(roomCode, {
+          type: 'video_state_changed',
+          roomCode,
+          username,
+          videoState: {
+            action: 'seek',
+            value: seconds,
+          },
+        });
+      };
+    }
+
     // Cleanup subscription and notify when user leaves
     return () => {
       broadcastToRoom(roomCode, {
@@ -239,6 +300,8 @@ const Room = () => {
         roomCode,
         username,
       });
+      
+      clearInterval(videoStateInterval);
       unsubscribe();
     };
   }, [roomCode, username, player, isLoading]);

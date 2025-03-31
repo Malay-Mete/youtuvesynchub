@@ -205,10 +205,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               });
             },
             onStateChange: (event) => {
-              // Handle state changes if needed
+              // We'll let the Room component handle state changes through props
               if (event.data === YT_PLAYER_STATE.ENDED) {
                 // Video ended
               }
+            },
+            onPlaybackQualityChange: (event) => {
+              // Quality change event will be handled by Room component
             },
           },
         });
