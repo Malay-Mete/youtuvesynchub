@@ -1,0 +1,73 @@
+# YouTube Sync Web App (React + Supabase)
+
+## Project Overview
+This project is a **real-time YouTube sync web app** built with **React** and **Supabase**. Users can **create or join rooms** to watch YouTube videos together in sync and chat with each other. Users can also **control playback and video quality** through chat commands and UI buttons.
+
+## Features
+### ✅ Room System (No Login Required)
+- Users can **create a room** and get a **unique room code**.
+- Other users can **join a room** by entering the room code.
+- Supabase stores and syncs room details in real time.
+- No authentication is required, making it **fast and easy to access**.
+
+### ✅ YouTube Video Sync (User-Shared Links)
+- Users **paste a YouTube link**, and the video updates for everyone in the room.
+- Video playback is **synced** across all users.
+
+### ✅ Chat-Controlled Video Playback
+Users can control the video by sending **chat commands**:
+| Command | Action |
+|---------|--------|
+| `play` | Plays the video |
+| `pause` | Pauses the video |
+| `seek <time>` | Jumps to a specific timestamp (in seconds) |
+| `speed <value>` | Changes playback speed (e.g., `speed 1.5`) |
+| `volume <value>` | Adjusts volume (0-100) |
+| `quality <resolution>` | Changes video quality (e.g., `quality 720p`) |
+| `fullscreen` | Toggles fullscreen mode |
+
+### ✅ Quality Control Button
+- A **quality control button** allows users to **manually change video quality** (e.g., **144p, 360p, 720p, 1080p**).
+
+### ✅ Real-Time Sync with Supabase (No Login Needed)
+- **Room details, video state, chat messages, and playback status** are stored and synced using **Supabase Realtime**.
+- Users can join and interact **without needing authentication**.
+- If a user **refreshes the page**, the current video, timestamp, and settings are restored.
+
+## Tech Stack
+- **Frontend:** React, Tailwind CSS
+- **Backend:** Supabase (PostgreSQL + Realtime)
+- **YouTube IFrame API** for video playback control
+
+## Setup Instructions
+1. **Clone the repository:**
+   ```bash
+   git clone <repo-url>
+   cd youtube-sync-app
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Set up Supabase:**
+   - Create a new project on [Supabase](https://supabase.io/)
+   - Get your **API keys** and **Database URL** from the Supabase dashboard.
+   - Create tables for rooms, messages, and video states.
+4. **Create a `.env` file** and add:
+   ```env
+   REACT_APP_SUPABASE_URL=<your-supabase-url>
+   REACT_APP_SUPABASE_ANON_KEY=<your-anon-key>
+   ```
+5. **Start the development server:**
+   ```bash
+   npm start
+   ```
+
+## Next Steps
+- Implement **real-time video playback synchronization**.
+- Add **chat UI and chat-based video controls**.
+- Build **a responsive design with Tailwind CSS**.
+- Optimize performance for smooth user experience.
+
+---
+🚀 **Ready to start building?** Let me know if you need help with the initial code! 🔥
