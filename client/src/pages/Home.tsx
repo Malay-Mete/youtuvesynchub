@@ -30,10 +30,15 @@ const Home = () => {
         description: `Your room code is: ${newRoomCode}`,
       });
       
-      // Small delay to ensure UI updates
-      setTimeout(() => {
-        setLocation(`/room/${newRoomCode}`);
-      }, 100);
+      // Make sure username is set in localStorage before redirecting
+      const username = localStorage.getItem('yt-sync-username');
+      if (!username) {
+        const newUsername = generateUsername();
+        localStorage.setItem('yt-sync-username', newUsername);
+      }
+      
+      // Navigate to the room
+      setLocation(`/room/${newRoomCode}`);
       
     } catch (error) {
       console.error("Error creating room:", error);
@@ -42,7 +47,6 @@ const Home = () => {
         description: "Failed to create room. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsCreating(false);
     }
   };
@@ -66,16 +70,22 @@ const Home = () => {
       const exists = await checkRoomExists(roomCodeUpper);
       
       if (exists) {
-        // Small delay to ensure UI updates
-        setTimeout(() => {
-          setLocation(`/room/${roomCodeUpper}`);
-        }, 100);
+        // Make sure username is set in localStorage before redirecting
+        const username = localStorage.getItem('yt-sync-username');
+        if (!username) {
+          const newUsername = generateUsername();
+          localStorage.setItem('yt-sync-username', newUsername);
+        }
+        
+        // Navigate to the room
+        setLocation(`/room/${roomCodeUpper}`);
       } else {
         toast({
           title: "Room Not Found",
           description: "The room code you entered doesn't exist",
           variant: "destructive",
         });
+        setIsJoining(false);
       }
     } catch (error) {
       console.error("Error joining room:", error);
@@ -84,7 +94,6 @@ const Home = () => {
         description: "Failed to join room. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsJoining(false);
     }
   };

@@ -55,8 +55,23 @@ const Room = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Get username from localStorage or generate a new one
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('yt-sync-username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    } else {
+      // This should never happen with our fixes in Home component
+      const newUsername = `Guest${Math.floor(Math.random() * 1000)}`;
+      localStorage.setItem('yt-sync-username', newUsername);
+      setUsername(newUsername);
+    }
+  }, []);
+
   // Initialize room and check if it exists
   useEffect(() => {
+    if (!username) return; // Wait for username to be set
+    
     const verifyRoom = async () => {
       try {
         const exists = await checkRoomExists(roomCode);
@@ -68,12 +83,6 @@ const Room = () => {
           });
           setLocation('/');
           return;
-        }
-        
-        // Get username from localStorage or generate a new one
-        const storedUsername = localStorage.getItem('yt-sync-username');
-        if (storedUsername) {
-          setUsername(storedUsername);
         }
         
         // Add system message
@@ -100,7 +109,7 @@ const Room = () => {
     };
     
     verifyRoom();
-  }, [roomCode, toast, setLocation]);
+  }, [roomCode, toast, setLocation, username]);
 
   // Subscribe to room updates
   useEffect(() => {

@@ -23,6 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
+        console.log('WebSocket message received:', data.type);
         
         // Handle different message types
         switch (data.type) {
@@ -34,6 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             handleLeaveRoom(ws, data);
             break;
             
+          case 'chat':
           case 'chat_message':
             broadcastToRoom(data.roomCode, {
               type: 'chat',
@@ -44,11 +46,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             break;
             
-          case 'video_update':
+          case 'command':
             broadcastToRoom(data.roomCode, {
-              type: 'video_state',
+              type: 'command',
               roomCode: data.roomCode,
+              username: data.username,
+              message: data.message,
+              timestamp: Date.now(),
+            });
+            break;
+          
+          case 'system':
+            broadcastToRoom(data.roomCode, {
+              type: 'system',
+              roomCode: data.roomCode,
+              message: data.message,
+              timestamp: Date.now(),
+            });
+            break;
+            
+          case 'user_joined':
+            broadcastToRoom(data.roomCode, {
+              type: 'user_joined',
+              roomCode: data.roomCode,
+              username: data.username,
+              timestamp: Date.now(),
+            });
+            break;
+            
+          case 'user_left':
+            broadcastToRoom(data.roomCode, {
+              type: 'user_left',
+              roomCode: data.roomCode,
+              username: data.username,
+              timestamp: Date.now(),
+            });
+            break;
+
+          case 'video_changed':
+            broadcastToRoom(data.roomCode, {
+              type: 'video_changed',
+              roomCode: data.roomCode,
+              username: data.username,
+              videoUrl: data.videoUrl,
+              timestamp: Date.now(),
+            });
+            break;
+            
+          case 'video_state_changed':
+            broadcastToRoom(data.roomCode, {
+              type: 'video_state_changed',
+              roomCode: data.roomCode,
+              username: data.username,
               videoState: data.videoState,
+              timestamp: Date.now(),
+            });
+            break;
+            
+          default:
+            // Forward unknown message types as-is
+            broadcastToRoom(data.roomCode, {
+              ...data,
               timestamp: Date.now(),
             });
             break;
