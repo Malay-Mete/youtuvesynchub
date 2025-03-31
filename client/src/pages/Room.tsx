@@ -512,22 +512,31 @@ const Room = () => {
   return (
     <div id="app" className="flex flex-col h-screen">
       {/* Header */}
-      <header className="bg-secondary border-b border-muted shadow-md py-3 px-4">
+      <header className="app-header py-3 px-4 border-b border-muted/30">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <i className="fas fa-play-circle text-primary text-2xl"></i>
-            <h1 className="text-xl font-semibold">YouTube Sync</h1>
+            <h1 className="text-xl app-title">YouTube Sync</h1>
           </div>
           
           <div className="flex items-center">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <span className="text-muted-foreground text-sm">Room:</span>
-                <span className="bg-muted text-accent font-mono px-3 py-1 rounded text-sm">{roomCode}</span>
+                <span 
+                  className="room-code text-sm cursor-pointer"
+                  onClick={() => {
+                    navigator.clipboard.writeText(roomCode);
+                    toast({
+                      title: "Room Code Copied",
+                      description: "Share this code with your friends to join",
+                    });
+                  }}
+                >{roomCode}</span>
               </div>
               <button 
                 onClick={handleLeaveRoom}
-                className="text-sm text-muted-foreground hover:text-primary transition"
+                className="text-sm text-muted-foreground hover:text-primary transition-all btn-hover-effect px-3 py-1 rounded-md hover:bg-muted/30"
               >
                 <i className="fas fa-sign-out-alt mr-1"></i> Leave
               </button>
@@ -539,7 +548,7 @@ const Room = () => {
       {/* Main Container */}
       <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
         {/* Left Side - Video Display and Controls */}
-        <div className="flex flex-col w-full md:w-3/4 h-full">
+        <div className="flex flex-col w-full md:w-3/4 h-full p-4">
           {/* Video Container */}
           <VideoPlayer 
             onPlayerReady={setPlayer} 
@@ -562,8 +571,8 @@ const Room = () => {
           
           {/* Current Video Info */}
           {videoState.title && (
-            <div className="p-4 bg-secondary border-b border-muted hidden md:block">
-              <h2 className="font-semibold truncate">{videoState.title}</h2>
+            <div className="p-4 mt-2 glass-panel rounded-lg hidden md:block animate-[fadeIn_0.3s_ease-out]">
+              <h2 className="font-semibold truncate text-lg">{videoState.title}</h2>
               {videoState.channelName && (
                 <p className="text-sm text-muted-foreground mt-1">{videoState.channelName}</p>
               )}

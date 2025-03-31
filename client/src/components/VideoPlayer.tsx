@@ -117,16 +117,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <div 
-      className={`relative bg-black w-full ${isFullscreen ? 'youtube-container' : ''}`}
-      style={isFullscreen ? {} : { height: 0, paddingBottom: '56.25%' }}
+      className={`relative bg-black w-full ${isFullscreen ? 'youtube-container' : 'youtube-container'}`}
       ref={playerContainerRef}
     >
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-secondary">
-          <div className="text-center space-y-4">
-            <i className="fas fa-youtube text-primary text-6xl"></i>
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-secondary to-card rounded-lg">
+          <div className="text-center space-y-4 animate-[fadeIn_0.5s_ease-out] p-8">
+            <div className="flex justify-center">
+              <i className="fas fa-play-circle text-primary text-6xl mb-2"></i>
+            </div>
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">YouTube Sync</h3>
             <p className="text-muted-foreground">No video playing yet</p>
-            <p className="text-sm text-muted">Paste a YouTube URL in the chat to get started</p>
+            <div className="mt-4 bg-muted/40 rounded-lg p-3 text-sm text-muted-foreground">
+              <p>Either:</p>
+              <ul className="mt-2 space-y-2">
+                <li className="flex items-center"><i className="fas fa-caret-right text-accent mr-2"></i> Paste a YouTube URL in the chat</li>
+                <li className="flex items-center"><i className="fas fa-caret-right text-accent mr-2"></i> Use the URL input below</li>
+              </ul>
+            </div>
           </div>
         </div>
       )}

@@ -42,6 +42,19 @@ const VideoControls: React.FC<VideoControlsProps> = ({
   const [videoUrl, setVideoUrl] = useState('');
   const [volume, setVolume] = useState(100);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  // Define the VideoState type
+  type VideoStateType = {
+    videoId: string | null;
+    videoUrl: string | null;
+    title: string | null;
+    channelName: string | null;
+    isPlaying: boolean;
+    currentTime: number;
+    quality: YoutubeQualityLevel;
+    volume: number;
+    playbackRate: number;
+  };
 
   // Update volume when the slider changes
   const handleVolumeChange = (value: number[]) => {
@@ -139,7 +152,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
           const videoData = player.getVideoData();
           
           if (videoData?.title !== videoState.title) {
-            setVideoState(prev => ({
+            setVideoState((prev: VideoStateType) => ({
               ...prev,
               title: videoData?.title || null,
               channelName: videoData?.author || null,
@@ -155,24 +168,24 @@ const VideoControls: React.FC<VideoControlsProps> = ({
   }, [player, videoState.title, setVideoState]);
 
   return (
-    <div className="p-4 bg-secondary border-b border-muted">
+    <div className="p-4 mt-3 glass-panel rounded-lg">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
           <Button 
             variant="outline" 
             size="icon"
-            className="bg-muted hover:bg-muted text-foreground"
+            className="control-button"
             onClick={handleTogglePlay}
             disabled={!player}
           >
             <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
           </Button>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3 bg-muted/20 rounded-full px-2 py-1">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-muted-foreground hover:text-foreground p-1"
+              className="text-muted-foreground hover:text-foreground btn-hover-effect p-1 rounded-full"
               onClick={() => handleVolumeChange([Math.max(0, volume - 10)])}
               disabled={!player}
             >
@@ -192,7 +205,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-muted-foreground hover:text-foreground p-1"
+              className="text-muted-foreground hover:text-foreground btn-hover-effect p-1 rounded-full"
               onClick={() => handleVolumeChange([Math.min(100, volume + 10)])}
               disabled={!player}
             >
@@ -206,15 +219,18 @@ const VideoControls: React.FC<VideoControlsProps> = ({
             <Input 
               type="text" 
               placeholder="Paste YouTube URL here" 
-              className="bg-muted border-muted focus:border-accent pr-10"
+              className="message-input pl-10 pr-10"
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               onKeyPress={handleKeyPress}
             />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+              <i className="fab fa-youtube"></i>
+            </span>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-accent"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-primary hover:text-accent btn-hover-effect"
               onClick={handleLoadVideo}
               disabled={!player || videoUrl.trim() === ''}
             >
@@ -232,7 +248,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
           <Button 
             variant="outline" 
             size="icon"
-            className="bg-muted hover:bg-muted text-muted-foreground"
+            className="control-button"
             onClick={handleToggleFullscreen}
             disabled={!player}
           >

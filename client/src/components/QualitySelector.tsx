@@ -83,20 +83,25 @@ const QualitySelector: React.FC<QualitySelectorProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1 bg-muted/30 hover:bg-muted/50 text-sm font-medium h-9 px-3"
+          className="control-button flex items-center gap-1 h-9 px-3"
         >
-          <i className="fas fa-cog text-xs mr-1" aria-hidden="true"></i>
-          <span>{qualityName}</span>
-          <i className="fas fa-chevron-down text-xs ml-1" aria-hidden="true"></i>
+          <i className="fas fa-cog text-xs mr-1 text-accent" aria-hidden="true"></i>
+          <span className="text-sm font-medium">{qualityName}</span>
+          <i className="fas fa-chevron-down text-xs ml-1 opacity-70" aria-hidden="true"></i>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-40">
+      <DropdownMenuContent align="end" className="w-40 bg-card/95 backdrop-blur border border-muted/30 rounded-lg shadow-lg p-1">
         {availableQualities.map((quality) => (
           <DropdownMenuItem
             key={quality}
-            className={`${qualityName === quality ? 'bg-secondary/50 font-medium' : ''}`}
+            className={`quality-option rounded-md my-1 transition-all duration-200 ${
+              qualityName === quality ? 'quality-option active' : ''
+            }`}
             onClick={() => handleQualitySelect(quality)}
           >
+            {qualityName === quality && (
+              <i className="fas fa-check text-accent mr-2 text-xs"></i>
+            )}
             {quality}
           </DropdownMenuItem>
         ))}
