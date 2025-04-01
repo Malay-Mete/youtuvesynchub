@@ -355,7 +355,8 @@ var vite_config_default = defineConfig({
   },
   root: path.resolve(__dirname, "client"),
   build: {
-    outDir: path.resolve(__dirname, "dist/public"),
+    outDir: path.resolve(__dirname, "dist"),
+    // ✅ Change from "dist/public" to "dist"
     emptyOutDir: true
   }
 });
